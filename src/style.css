@@ -124,6 +124,21 @@ textarea { padding: 8px; resize: vertical; width: 100%; }
 .b-pie li { display: flex; align-items: center; gap: 8px; }
 .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 .pie-v { margin-left: auto; padding-left: 16px; font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.pie-edit { flex: 1 1 320px; min-width: 0; gap: 8px; }
+.pie-edit input[type="text"], .pie-edit input[type="number"] { height: 32px; border: 1px solid #D3D9E3; border-radius: 6px; padding: 0 8px; font-size: 13px; color: var(--ink); background: #fff; }
+.pie-title input { width: 100%; font-weight: 600; }
+.pie-rows { display: flex; flex-direction: column; gap: 6px; }
+.pie-row { display: flex; align-items: center; gap: 8px; }
+.color-pick { position: relative; width: 28px; height: 28px; border-radius: 6px; flex: 0 0 auto; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.color-pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.color-pick input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+.pie-label { flex: 1 1 auto; min-width: 0; }
+.pie-label input { width: 100%; }
+.pie-num { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); }
+.pie-num input { width: 76px; text-align: right; font-variant-numeric: tabular-nums; }
+.pie-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; padding-top: 4px; }
+.pie-actions { display: inline-flex; gap: 6px; }
 .b-ol { margin: 0; padding-left: 20px; font-size: 13px; color: #34415A; }
 
 /* 设置面板 */

@@ -1,29 +1,14 @@
 <script setup>
-import { computed } from 'vue'
 import EditableText from './EditableText.vue'
+import PieEditor from './PieEditor.vue'
 
-const props = defineProps({
+defineProps({
   block: { type: Object, required: true },
   editable: { type: Boolean, default: true },
   num: { type: String, default: '' }
 })
-const emit = defineEmits(['edited'])
+const emit = defineEmits(['edited', 'pie-changed'])
 const edited = () => emit('edited')
-
-const pieBg = computed(() => {
-  if (props.block.type !== 'pie') return ''
-  const total = props.block.items.reduce((s, i) => s + i.value, 0)
-  let acc = 0
-  const stops = props.block.items.map(i => {
-    const from = acc / total * 100
-    acc += i.value
-    return `#${i.color} ${from}% ${acc / total * 100}%`
-  })
-  return `conic-gradient(${stops.join(', ')})`
-})
-const pieLabel = computed(() => props.block.type === 'pie'
-  ? props.block.title + '：' + props.block.items.map(i => `${i.label}${i.value}%`).join('，')
-  : '')
 </script>
 
 <template>
@@ -60,17 +45,7 @@ const pieLabel = computed(() => props.block.type === 'pie'
     </table>
   </div>
 
-  <figure v-else-if="block.type === 'pie'" class="b-pie">
-    <div class="pie" role="img" :aria-label="pieLabel" :style="{ background: pieBg }"></div>
-    <figcaption>
-      <strong>{{ block.title }}</strong>
-      <ul>
-        <li v-for="it in block.items" :key="it.label">
-          <span class="swatch" :style="{ background: '#' + it.color }" aria-hidden="true"></span>{{ it.label }}<span class="pie-v">{{ it.value }}%</span>
-        </li>
-      </ul>
-    </figcaption>
-  </figure>
+  <PieEditor v-else-if="block.type === 'pie'" :block="block" :editable="editable" @edited="edited" @changed="emit('pie-changed')" />
 
   <ol v-else-if="block.type === 'ol'" class="b-ol">
     <EditableText v-for="(it, i) in block.items" :key="i" v-model="block.items[i]" tag="li" :editable="editable" @edited="edited" />

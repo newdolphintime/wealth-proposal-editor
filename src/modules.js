@@ -88,6 +88,8 @@ const GENERATORS = {
       type: 'table',
       head: ['大类资产', '当前', '建议', '调整（万元）'],
       align: ['l', 'r', 'r', 'r'],
+      link: 'pie', // 与上方饼图联动：饼图改动后自动更新“建议”和“调整”列
+      base: client.financialBase,
       rows: client.allocation.map(a => {
         const delta = Math.round((a.target - a.current) / 100 * client.financialBase)
         return [a.label, a.current + '%', a.target + '%', (delta > 0 ? '+' : '') + delta]

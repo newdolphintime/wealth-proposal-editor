@@ -87,7 +87,7 @@ function onLibDragStart (e, type) {
   e.dataTransfer.setData('text/plain', type)
 }
 function onModDragStart (e, idx) {
-  if (e.target.closest && e.target.closest('[contenteditable="plaintext-only"]')) { e.preventDefault(); return }
+  if (e.target.closest && e.target.closest('[contenteditable="plaintext-only"], input, textarea, select')) { e.preventDefault(); return }
   drag = { type: null, idx }
   e.dataTransfer.effectAllowed = 'move'
   e.dataTransfer.setData('text/plain', 'module-' + idx)
@@ -121,10 +121,35 @@ async function generateAll () {
   await Promise.all(list.map((m, i) => new Promise(r => setTimeout(r, i * 300)).then(() => generate(m))))
 }
 
+// ---------- 饼图与配置表联动 ----------
+// 饼图的分类/占比改动后，同步更新同一模块中 link: 'pie' 的表格：
+// 按分类名匹配原有行（保留“当前”列），重算“建议”和“调整（万元）”列；新增分类当前占比记为 0%。
+function syncPieTable (m) {
+  const pie = m.blocks.find(b => b.type === 'pie')
+  const tbl = m.blocks.find(b => b.type === 'table' && b.link === 'pie')
+  if (!pie || !tbl) return
+  const oldRows = tbl.rows
+  const byLabel = new Map(oldRows.map(r => [r[0], r]))
+  tbl.rows = pie.items.map((it, i) => {
+    // 先按名称匹配；分类改名时按原位置沿用“当前”列
+    const sameSlot = oldRows[i] && !pie.items.some(x => x.label === oldRows[i][0]) ? oldRows[i] : null
+    const prev = byLabel.get(it.label) || sameSlot
+    const current = prev ? parseFloat(prev[1]) || 0 : 0
+    const delta = Math.round((it.value - current) / 100 * (tbl.base || 0))
+    return [it.label, current + '%', it.value + '%', (delta > 0 ? '+' : '') + delta]
+  })
+}
+
 // ---------- 导出 ----------
 async function exportWord () {
   if (notDone.value.length) {
     flash(`还有 ${notDone.value.length} 个模块未生成（${notDone.value.map(m => libraryItem(m.type).name).join('、')}），请先生成或删除后再导出。`, 'warn')
+    return
+  }
+  const badPie = state.mods.find(m => m.blocks.some(b => b.type === 'pie' && Math.abs(b.items.reduce((s, i) => s + (Number(i.value) || 0), 0) - 100) >= 0.01))
+  if (badPie) {
+    flash(`「${libraryItem(badPie.type).name}」中饼图各分类合计不等于 100%，请调整后再导出。`, 'warn')
+    state.sel = badPie.uid
     return
   }
   state.exporting = true
@@ -271,6 +296,7 @@ onMounted(() => {
                   :block="b" :editable="!state.preview"
                   :num="b.type === 'h' ? chapterNums[m.uid] : ''"
                   @edited="m.edited = true"
+                  @pie-changed="syncPieTable(m)"
                 />
               </div>
             </article>
